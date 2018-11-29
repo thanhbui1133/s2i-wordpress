@@ -24,4 +24,7 @@ spec:
     type: Docker
     dockerStrategy:
       dockerfilePath: 'Dockerfile.7.0'
+      buildArgs:
+        - name: 'WORDPRESS_VERSION'
+          value: '4.9.8'
   triggers: []
