@@ -27,4 +27,6 @@ spec:
       buildArgs:
         - name: 'WORDPRESS_VERSION'
           value: '4.9.8'
+        - name: 'WORDPRESS_SHA1'
+          value: '0945bab959cba127531dceb2c4fed81770812b4f'
   triggers: []
