@@ -163,6 +163,38 @@ objects:
           persistentVolumeClaim:
             claimName: "${NAME}-wp-content"
         containers:
+        - name: mysqld-exporter
+          args:
+            -  '--log.level=debug'
+          image: 'prom/mysqld-exporter:v0.11.0'
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 9104
+            protocol: TCP
+          resources:
+            limits:
+              memory: 512Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: "${NAME}"
+                key: database-user
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "${NAME}"
+                key: database-password
+          - name: MYSQL_DATABASE
+            value: "${DATABASE_NAME}"
+          - name: MYSQL_SERVICE_HOST
+            value: "${NAME}-${DATABASE_SERVICE_NAME}"
+          - name: MYSQL_SERVICE_PORT
+            value: '3306'
+          - name: DATA_SOURCE_NAME
+            value: $(MYSQL_USER):$(MYSQL_PASSWORD)@($(MYSQL_SERVICE_HOST):$(MYSQL_SERVICE_PORT))/$(MYSQL_DATABASE)
         - name: apache-exporter
           image: bonniernews/apache_exporter:latest
           ports:
