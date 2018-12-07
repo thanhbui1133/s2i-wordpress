@@ -1,0 +1,32 @@
+kind: BuildConfig
+apiVersion: v1
+metadata:
+  annotations:
+    description: Build a container and push it to image streams
+  labels:
+    app: wordpress-tungtest
+  name: bn-bonniernews-tungtest-container
+  namespace: bn-bonniernews-test
+spec:
+  output:
+    to:
+      kind: DockerImage
+      name: 'docker-registry.default.svc:5000/bn-bonniernews-test/wordpress:5.0-php-7.0'
+  runPolicy: Serial
+  source:
+    git:
+      ref: master
+      uri: git@github.com:BonnierNews/s2i-wordpress.git
+    sourceSecret:
+      name: deploy-git
+    type: Git
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: 'Dockerfile.7.0'
+      buildArgs:
+        - name: 'WORDPRESS_VERSION'
+          value: '5.0'
+        - name: 'WORDPRESS_SHA1'
+          value: '67758958f14c1dcefe37ce6558d470a4e142893b'
+  triggers: []
