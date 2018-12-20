@@ -178,30 +178,30 @@ objects:
           volumeMounts:
           - name: "${NAME}-data"
             mountPath: "/opt/app-root/wp-content"
-          readinessProbe:
-            timeoutSeconds: 15
-            failureThreshold: 4
-            periodSeconds: 20
-            successThreshold: 1
-            initialDelaySeconds: 60
-            httpGet:
-              path: "/health.php"
-              httpHeaders:
-                - name: X-K8S-PROBE
-                  value: "${K8S_PROBE}"
-              port: 8080
-          livenessProbe:
-            timeoutSeconds: 15
-            failureThreshold: 4
-            periodSeconds: 20
-            successThreshold: 1
-            initialDelaySeconds: 70
-            httpGet:
-              path: "/health.php"
-              httpHeaders:
-                - name: X-K8S-PROBE
-                  value: "${K8S_PROBE}"
-              port: 8080
+          #readinessProbe:
+          #  timeoutSeconds: 15
+          #  failureThreshold: 4
+          #  periodSeconds: 20
+          #  successThreshold: 1
+          #  initialDelaySeconds: 60
+          #  httpGet:
+          #    path: "/health.php"
+          #    httpHeaders:
+          #      - name: X-K8S-PROBE
+          #        value: "${K8S_PROBE}"
+          #    port: 8080
+          #livenessProbe:
+          #  timeoutSeconds: 15
+          #  failureThreshold: 4
+          #  periodSeconds: 20
+          #  successThreshold: 1
+          #  initialDelaySeconds: 70
+          #  httpGet:
+          #    path: "/health.php"
+          #    httpHeaders:
+          #      - name: X-K8S-PROBE
+          #        value: "${K8S_PROBE}"
+          #    port: 8080
           env:
           - name: WORDPRESS_DB_HOST
             value: "${NAME}-${DATABASE_SERVICE_NAME}"
@@ -444,7 +444,7 @@ parameters:
   displayName: Wordpress version
   description: The version of wordpress to use.
   required: true
-  value: 5.0-php-7.0
+  value: 5.0.2-php-7.0
 - name: NAMESPACE
   displayName: Namespace
   description: The OpenShift Namespace where the ImageStream resides.
