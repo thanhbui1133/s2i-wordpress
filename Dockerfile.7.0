@@ -22,12 +22,13 @@ RUN yum install -y centos-release-scl-rh && \
     yum clean all -y
 
 # Install wordpress and backup the base image S2I scripts
-RUN cd /tmp && curl -o wordpress.tar.gz -SL https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz \
+RUN echo "Install wordpress and backup the base image S2I scripts" \
+    && cd /tmp && curl -o wordpress.tar.gz -SL https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz \
     && mkdir -p /opt/app-root/wordpress \
     && echo "$WORDPRESS_SHA1 *wordpress.tar.gz" | sha1sum -c - \
     && tar -xzf wordpress.tar.gz --strip-components=1 -C /opt/app-root/wordpress \
-	&& rm -rf /opt/app-root/wordpress/wp-content/plugins/akismet
-	&& rm -f /opt/app-root/wordpress/wp-content/plugins/hello.php
+	&& rm -rf /opt/app-root/wordpress/wp-content/plugins/akismet \
+	&& rm -f /opt/app-root/wordpress/wp-content/plugins/hello.php \
     && rm wordpress.tar.gz \
     && mv /opt/app-root/wordpress/wp-content /opt/app-root/wordpress/wp-content-install \
     && mv $STI_SCRIPTS_PATH/run $STI_SCRIPTS_PATH/run-base \
