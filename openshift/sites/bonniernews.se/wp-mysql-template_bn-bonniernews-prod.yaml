@@ -32,6 +32,7 @@ objects:
   stringData:
     database-user: "${DATABASE_USER}"
     database-password: "${DATABASE_PASSWORD}"
+    database-root-password: "r${DATABASE_PASSWORD}"
     wordpress-auth-key: "${WORDPRESS_AUTH_KEY}"
     wordpress-secure-auth-key: "${WORDPRESS_SECURE_AUTH_KEY}"
     wordpress-logged-in-key: "${WORDPRESS_LOGGED_IN_KEY}"
@@ -389,6 +390,11 @@ objects:
               secretKeyRef:
                 name: "${NAME}"
                 key: database-password
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "${NAME}"
+                key: database-root-password
           - name: MYSQL_DATABASE
             value: "${DATABASE_NAME}"
           - name: MYSQL_SERVICE_HOST
@@ -396,7 +402,7 @@ objects:
           - name: MYSQL_SERVICE_PORT
             value: '3306'
           - name: DATA_SOURCE_NAME
-            value: $(MYSQL_USER):$(MYSQL_PASSWORD)@($(MYSQL_SERVICE_HOST):$(MYSQL_SERVICE_PORT))/$(MYSQL_DATABASE)
+            value: root:$(MYSQL_ROOT_PASSWORD)@($(MYSQL_SERVICE_HOST):$(MYSQL_SERVICE_PORT))/$(MYSQL_DATABASE)
         - name: mysql
           image: " "
           ports:
@@ -430,6 +436,11 @@ objects:
               secretKeyRef:
                 name: "${NAME}"
                 key: database-password
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "${NAME}"
+                key: database-root-password
           - name: MYSQL_DATABASE
             value: "${DATABASE_NAME}"
           resources:
