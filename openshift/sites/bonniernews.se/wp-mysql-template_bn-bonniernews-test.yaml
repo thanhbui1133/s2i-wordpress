@@ -321,6 +321,9 @@ objects:
     name: "${NAME}-${DATABASE_SERVICE_NAME}"
     annotations:
       description: Exposes the database server
+      service.alpha.openshift.io/dependencies: '[{"name": "${NAME}-${DATABASE_SERVICE_NAME}","kind": "Service"}]'
+      prometheus.io/port: '9104'
+      prometheus.io/scrape: 'true'
   spec:
     ports:
     - name: mysql
