@@ -50,6 +50,11 @@ RUN update-ca-trust
 # Add root
 COPY ./root/ /
 
+RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip" && \
+    unzip awscli-bundle.zip && \
+    ./awscli-bundle/install -b ~/bin/aws && \
+    rm awscli-bundle.zip
+
 # Install wordpress S2I scripts
 COPY s2i/bin/* $STI_SCRIPTS_PATH/
 USER 1001
