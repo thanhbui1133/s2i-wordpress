@@ -1,0 +1,32 @@
+kind: BuildConfig
+apiVersion: v1
+metadata:
+  annotations:
+    description: Build a container and push it to image streams
+  labels:
+    app: wordpress
+  name: dn-story-container
+  namespace: dn-story-test
+spec:
+  output:
+    to:
+      kind: DockerImage
+      name: 'docker-registry.default.svc:5000/dn-story-test/wordpress:5.1.1-php-7.0'
+  runPolicy: Serial
+  source:
+    git:
+      ref: master
+      uri: git@github.com:thanhbui1133/s2i-wordpress.git
+    sourceSecret:
+      name: deploy-git
+    type: Git
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: 'Dockerfile.7.0'
+      buildArgs:
+        - name: WORDPRESS_VERSION
+          value: '5.1.1'
+        - name: WORDPRESS_SHA1
+          value: 'f1bff89cc360bf5ef7086594e8a9b68b4cbf2192'
+  triggers: []
