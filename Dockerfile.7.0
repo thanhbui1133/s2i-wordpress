@@ -55,6 +55,7 @@ RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.
     unzip awscli-bundle.zip && \
     ./awscli-bundle/install -b ~/bin/aws && \
     rm awscli-bundle.zip
+COPY openshift/command/upload.sh /opt/app-root/src
 
 # Install wordpress S2I scripts
 COPY s2i/bin/* $STI_SCRIPTS_PATH/
