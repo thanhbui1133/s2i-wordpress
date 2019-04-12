@@ -19,12 +19,12 @@ aws s3 cp "$object" "backup.sql"
 
 if [ $? -eq 0 ]; then
     echo Download OK
-	mysqladmin -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force drop $mysqlname
+	/opt/rh/rh-mysql57/root/usr/bin/mysqladmin -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force drop $mysqlname
 
-	mysqladmin -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force create $mysqlname
+	/opt/rh/rh-mysql57/root/usr/bin/mysqladmin -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force create $mysqlname
 	
 	if [ $? -eq 0 ]; then
-		mysql -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force $mysqlname < backup.sql &
+		/opt/rh/rh-mysql57/root/usr/bin/mysql -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force $mysqlname < backup.sql &
 		
 		BACK_PID=$!
 		wait $BACK_PID
@@ -35,7 +35,7 @@ if [ $? -eq 0 ]; then
 		sleep 2m
 		
 		if [ "$siteurl" != "" ]; then
-			mysql -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force -D $mysqlname -e "UPDATE wp_options SET option_value = '$siteurl' where option_name = 'siteurl' or option_name = 'home'"
+			/opt/rh/rh-mysql57/root/usr/bin/mysql -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force -D $mysqlname -e "UPDATE wp_options SET option_value = '$siteurl' where option_name = 'siteurl' or option_name = 'home'"
 		fi
 		echo Done
 	else 

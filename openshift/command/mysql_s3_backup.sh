@@ -16,7 +16,7 @@ stamp=`date +"%s_%A_%d_%B_%Y_%H%M"`
 
 object="$bucket/$stamp/backup.sql"
 
-mysqldump -u $mysqluser -P $mysqlport -h $mysqlhost -u wordpress -p$mysqlpass $mysqlname > backup.sql;
+/opt/rh/rh-mysql57/root/usr/bin/mysqldump -u $mysqluser -P $mysqlport -h $mysqlhost -u wordpress -p$mysqlpass $mysqlname > backup.sql;
 
 if [ $? -eq 0 ]; then
   echo OK
