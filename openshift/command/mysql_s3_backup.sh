@@ -9,12 +9,12 @@ mysqlhost="$MYSQL_HOST"
 mysqlport="$MYSQL_PORT"
 bucket="$AWS_BUCKET"
 methods="$METHODS"
+folder="$LOCATION_STORAGE"
 
 #stamp=`date +"%s_%A_%d_%B_%Y_%H%M"`
-stampdate=`date +"%m_%d_%Y"`
-stamphour=`date +"%H_%M"`
+stamp=`date +"%m_%d_%Y_%H_%M_%S"`
 
-location="$stampdate/$stamphour.sql"
+location="$folder/$stamp.sql"
 
 /opt/rh/rh-mysql57/root/usr/bin/mysqldump -u $mysqluser -P $mysqlport -h $mysqlhost -u wordpress -p$mysqlpass $mysqlname > backup.sql;
 
@@ -55,10 +55,10 @@ for i in "${methodsArr[@]}"; do
         fi
         ;;
         "pvc") echo "Starting pvc backup..."
-        if [ ! -d "/data/backup/$stampdate" ]; then
-            mkdir "/data/backup/$stampdate"
+        if [ ! -d "/data/backup/$folder" ]; then
+            mkdir "/data/backup/$folder"
         fi
-        mv "backup.sql" "/data/backup/$stampdate/$stamphour.sql"
+        mv "backup.sql" "/data/backup/$location"
         if [ $? -eq 0 ]; then
           echo " Backup successful"
         else
