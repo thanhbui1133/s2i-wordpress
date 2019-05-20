@@ -11,7 +11,7 @@ spec:
   output:
     to:
       kind: DockerImage
-      name: 'docker-registry.default.svc:5000/dn-story-test/job-container-2'
+      name: 'docker-registry.default.svc:5000/dn-story-test/job-container'
   runPolicy: Serial
   source:
     git:

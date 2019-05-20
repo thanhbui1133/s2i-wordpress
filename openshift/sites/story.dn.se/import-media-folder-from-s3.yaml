@@ -1,0 +1,88 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: import-media-folder-from-s3
+  annotations:
+    openshift.io/display-name: "Import Media from S3"
+    description: Application for restore or import from sql file to mysql host
+    tags: file,s3aws
+message: |-
+  The following service(s) have been created in your project: ${NAME}.
+labels:
+  template: import-media-folder-from-s3
+  app: "wordpress"
+objects:
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: "${NAME}-secret"
+    labels:
+      app: "wordpress-${NAME}"
+  stringData:
+    aws-access-key-id: "${AWS_ACCESS_KEY_ID}"
+    aws-secret-access-key: "${AWS_SECRET_ACCESS_KEY}"
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: "${NAME}"
+    labels:
+      app: "wordpress-${NAME}"
+  spec:
+    template:
+      metadata:
+        name: "${NAME}"
+      spec:
+        containers:
+        - name: wordpress
+          image: thanhbui1133/backup_restore_s3_openshift
+          imagePullPolicy: Always
+          command: ["/var/lib/mysql/bin/import_upload.sh"]
+          volumeMounts:
+          - mountPath: "${MOUNT_PATH}"
+            name: "${NAME}-data"
+          env:
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: "${NAME}-secret"
+                key: aws-access-key-id
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: "${NAME}-secret"
+                key: aws-secret-access-key
+          - name: AWS_BUCKET_PATH
+            value: "${AWS_BUCKET}"
+        volumes:
+        - name: "${NAME}-data"
+          persistentVolumeClaim:
+            claimName: "${PVC_NAME}"
+        restartPolicy: OnFailure
+parameters:
+- name: NAME
+  displayName: Name of job
+  description: The name assigned to all of the frontend objects defined in this template.
+  required: true
+- name: AWS_ACCESS_KEY_ID
+  displayName: Amazon WebService Access Key ID
+  required: true
+  value: aws_access_key_id
+- name: AWS_SECRET_ACCESS_KEY
+  displayName: Amazon WebService Secret Key
+  required: true
+  value: aws_access_key_secret
+- name: AWS_BUCKET
+  displayName: Amazon Bucket file path
+  required: true
+  value: s3://example/EX_dd_mm_yy/uploads
+- name: PVC_NAME
+  displayName: Persistent Volume Claim Name
+  description: The Persistent Volume Claim name get from Storage.
+  required: true
+  value: example-wp-content
+- name: MOUNT_PATH
+  displayName: Mount Path
+  description: The mount path of container.
+  required: true
+  value: /opt/app-root/wp-content
