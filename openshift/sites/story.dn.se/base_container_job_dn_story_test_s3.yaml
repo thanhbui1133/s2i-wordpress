@@ -5,7 +5,7 @@ metadata:
     description: Build a container and push it to image streams
   labels:
     app: wordpress
-  name: dn-story-job-container-2
+  name: dn-story-job-container
   namespace: dn-story-test
 spec:
   output:
