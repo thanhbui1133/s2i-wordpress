@@ -29,27 +29,23 @@ objects:
   apiVersion: batch/v1
   metadata:
     name: "${NAME}"
-  spec:
+  spec:    
     template:
       metadata:
         name: "${NAME}"
       spec:
         containers:
         - name: restore
-          image: "${IMAGE}"
+          image: thanhbui1133/backup_restore_s3_openshift
           imagePullPolicy: Always
-          command: ["/bin/sh"]
-          args: ["/var/lib/mysql/bin/mysql_s3_restore.sh"]
-          volumeMounts:
-          - mountPath: /data/backup
-            name: ${NAME}
+          command: ["/var/lib/mysql/bin/mysql_s3_restore.sh"]
           env:
           - name: MYSQL_HOST
             value: "${DATABASE_HOST}"
           - name: MYSQL_NAME
             value: "${DATABASE_NAME}"
           - name: MYSQL_PORT
-            value: "${DATABASE_PORT}"
+            value: "${DATABASE_PORT}" 
           - name: MYSQL_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -71,33 +67,15 @@ objects:
                 name: "${NAME}-secret"
                 key: aws-secret-access-key
           - name: AWS_BUCKET_PATH
-            value: "${AWS_BUCKET}"
+            value: "${AWS_BUCKET}" 
           - name: SITE_URL
-            value: "${SITE_URL}"
-          - name: METHODS
-            value: "${METHODS}"
-          - name: LOCATION
-            value: "${LOCATION}"
-        volumes:
-        - name: ${NAME}
-          persistentVolumeClaim:
-            claimName: ${DB_PVC}
+            value: "${SITE_URL}"              
         restartPolicy: OnFailure
 parameters:
 - name: NAME
   displayName: Name of job
   description: The name assigned to all of the frontend objects defined in this template.
   required: true
-- name: IMAGE
-  displayName: Name of image
-  description: The image name assigned to all of the frontend objects defined in this template.
-  required: true
-  value: docker-registry.default.svc:5000/dn-story-test/job-container-2
-- name: METHODS
-  displayName: Backup method
-  description: 'values: "s3", "pvc", "none"'
-  required: true
-  value: s3
 - name: DATABASE_HOST
   displayName: Database Host
   required: true
@@ -105,7 +83,7 @@ parameters:
 - name: DATABASE_PORT
   displayName: Database port
   required: true
-  value: database_port
+  value: database_port  
 - name: DATABASE_NAME
   displayName: Database Name
   required: true
@@ -120,30 +98,17 @@ parameters:
   from: "[a-zA-Z0-9]{16}"
 - name: SITE_URL
   displayName: Website url for change siteurl/home value in database
-  description: Empty or type "none" for no change
   required: false
-  value: none
+  value: https://wordpress.org
 - name: AWS_ACCESS_KEY_ID
   displayName: Amazon WebService Key ID
-  description: This field require for aws s3 method
-  required: false
+  required: true
   value: aws_access_key_id
 - name: AWS_SECRET_ACCESS_KEY
   displayName: Amazon WebService Secret Key
-  description: This field require for aws s3 method
-  required: false
+  required: true
   value: aws_access_key_secret
 - name: AWS_BUCKET
   displayName: Amazon Bucket file path
-  description: Location recipe {bucket folder url}/{Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for find nearest backup file time or input {bucket folder url}/{Directory's name of backup file} for finding lastest backup file (require for aws s3 method)
-  required: false
-  value: s3://example/wordpress_dnstorytest/04_22_2019_02_30_00.sql
-- name: LOCATION
-  displayName: Database backup directory/file (require for pvc method)
-  description: Location recipe {Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for find nearest backup file time or input {Directory's name of backup file} for finding lastest backup file (Base directory data/backup)
-  required: false
-  value: wordpress_dnstorytest/04_22_2019_02_30_00.sql
-- name: DB_PVC
-  displayName: Database backup PVC (require for pvc method)
-  required: false
-  value: dn-story-test-backup-storage
+  required: true
+  value: s3://example/EX_dd_mm_yy/backup.sql

@@ -36,18 +36,12 @@ objects:
         template:
           metadata:
             name: "${NAME}"
-            labels:
-              appName: "wordpress-${NAME}"
           spec:
             containers:
             - name: backup
-              image: "${IMAGE}"
+              image: thanhbui1133/backup_restore_s3_openshift
               imagePullPolicy: Always
-              command: ["/bin/sh"]
-              args: ["/var/lib/mysql/bin/mysql_s3_backup.sh"]
-              volumeMounts:
-              - mountPath: "/data/backup"
-                name: "${STORAGE_PVC}-data"
+              command: ["/var/lib/mysql/bin/mysql_s3_backup.sh"]
               env:
               - name: MYSQL_HOST
                 value: "${DATABASE_HOST}"
@@ -65,10 +59,6 @@ objects:
                   secretKeyRef:
                     name: "${NAME}-secret"
                     key: database-user
-              - name: METHODS
-                value: "${METHODS}"
-              - name: DAYTODEL
-                value: "${DAYTODEL}"
               - name: AWS_ACCESS_KEY_ID
                 valueFrom:
                   secretKeyRef:
@@ -81,29 +71,12 @@ objects:
                     key: aws-secret-access-key
               - name: AWS_BUCKET
                 value: "${AWS_BUCKET_NAME}"
-              - name: LOCATION_STORAGE
-                value: "${LOCATION_STORAGE}"
-            volumes:
-            - name: "${STORAGE_PVC}-data"
-              persistentVolumeClaim:
-                claimName: ${STORAGE_PVC}
             restartPolicy: OnFailure
 parameters:
 - name: NAME
   displayName: Name of schedule job
   description: The name assigned to all of the frontend objects defined in this template.
   required: true
-  value: dn-story-test-backup-job
-- name: IMAGE
-  displayName: Name of image
-  description: The image name assigned to all of the frontend objects defined in this template.
-  required: true
-  value: docker-registry.default.svc:5000/dn-story-test/job-container-2
-- name: METHODS
-  displayName: Backup method
-  description: 'values: "s3", "pvc", "s3,pvc", "none"'
-  required: true
-  value: pvc
 - name: DATABASE_HOST
   displayName: Database Host
   required: true
@@ -111,7 +84,7 @@ parameters:
 - name: DATABASE_PORT
   displayName: Database port
   required: true
-  value: database_port
+  value: database_port  
 - name: DATABASE_NAME
   displayName: Database Name
   required: true
@@ -129,29 +102,15 @@ parameters:
   description: Cron time string define when backup start (Ex 0 3 * * * - Run at 3am every day)
   required: true
   value: 0 3 * * *
-- name: DAYTODEL
-  displayName: Day duration
-  description: Day duration to keep backup file
-  required: false
-- name: LOCATION_STORAGE
-  displayName: Backup folder name (require for pvc method)
-  description: Directory's name of backup file
-  required: false
-  value: wordpress_dnstorytest
-- name: STORAGE_PVC
-  displayName: Backup Storage (require for pvc method)
-  description: The Pesistent Volumne Claim where back up database located
-  required: false
-  value: dn-story-test-backup-storage
 - name: AWS_ACCESS_KEY_ID
-  displayName: Amazon WebService Key ID (require for s3 method)
-  required: false
+  displayName: Amazon WebService Key ID
+  required: true
   value: aws_access_key_id
 - name: AWS_SECRET_ACCESS_KEY
-  displayName: Amazon WebService Secret Key (require for s3 method)
-  required: false
+  displayName: Amazon WebService Secret Key
+  required: true
   value: aws_access_key_secret
 - name: AWS_BUCKET_NAME
-  displayName: Amazon WebService Bucket Name (require for s3 method)
-  required: false
+  displayName: Amazon WebService Bucket Name
+  required: true
   value: s3://example
