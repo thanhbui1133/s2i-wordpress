@@ -1,0 +1,157 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: mysql-schedule-backup-to-s3
+  annotations:
+    openshift.io/display-name: "MySQL Schedule backup to S3"
+    description: Application for schedule backup from MySQL database to S3 services
+    tags: mysql,s3aws
+    iconClass: icon-mysql-database
+message: |-
+  The following service(s) have been created in your project: ${NAME}.
+labels:
+  template: mysql-schedule-backup-to-s3
+  app: "wordpress"
+objects:
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: "${NAME}-secret"
+    labels:
+      app: "wordpress-${NAME}"
+  stringData:
+    database-user: "${DATABASE_USER}"
+    database-password: "${DATABASE_PASSWORD}"
+    aws-access-key-id: "${AWS_ACCESS_KEY_ID}"
+    aws-secret-access-key: "${AWS_SECRET_ACCESS_KEY}"
+- kind: CronJob
+  apiVersion: batch/v1beta1
+  metadata:
+    name: "${NAME}"
+  spec:
+    schedule: "${CRON_TIME}"
+    jobTemplate:
+      spec:
+        template:
+          metadata:
+            name: "${NAME}"
+            labels:
+              appName: "wordpress-${NAME}"
+          spec:
+            containers:
+            - name: backup
+              image: "${IMAGE}"
+              imagePullPolicy: Always
+              command: ["/bin/sh"]
+              args: ["/var/lib/mysql/bin/mysql_s3_backup.sh"]
+              volumeMounts:
+              - mountPath: "/data/backup"
+                name: "${STORAGE_PVC}-data"
+              env:
+              - name: MYSQL_HOST
+                value: "${DATABASE_HOST}"
+              - name: MYSQL_NAME
+                value: "${DATABASE_NAME}"
+              - name: MYSQL_PORT
+                value: "${DATABASE_PORT}"
+              - name: MYSQL_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: "${NAME}-secret"
+                    key: database-password
+              - name: MYSQL_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: "${NAME}-secret"
+                    key: database-user
+              - name: METHODS
+                value: "${METHODS}"
+              - name: DAYTODEL
+                value: "${DAYTODEL}"
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: "${NAME}-secret"
+                    key: aws-access-key-id
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: "${NAME}-secret"
+                    key: aws-secret-access-key
+              - name: AWS_BUCKET
+                value: "${AWS_BUCKET_NAME}"
+              - name: LOCATION_STORAGE
+                value: "${LOCATION_STORAGE}"
+            volumes:
+            - name: "${STORAGE_PVC}-data"
+              persistentVolumeClaim:
+                claimName: ${STORAGE_PVC}
+            restartPolicy: OnFailure
+parameters:
+- name: NAME
+  displayName: Name of schedule job
+  description: The name assigned to all of the frontend objects defined in this template.
+  required: true
+  value: dn-story-test-backup-job
+- name: IMAGE
+  displayName: Name of image
+  description: The image name assigned to all of the frontend objects defined in this template.
+  required: true
+  value: docker-registry.default.svc:5000/dn-story-test/job-container
+- name: METHODS
+  displayName: Backup method
+  description: 'values: "s3", "pvc", "s3,pvc", "none"'
+  required: true
+  value: pvc
+- name: DATABASE_HOST
+  displayName: Database Host
+  required: true
+  value: database_host
+- name: DATABASE_PORT
+  displayName: Database port
+  required: true
+  value: database_port
+- name: DATABASE_NAME
+  displayName: Database Name
+  required: true
+  value: wordpress
+- name: DATABASE_USER
+  displayName: Database Usermysql
+  required: true
+  value: wordpress
+- name: DATABASE_PASSWORD
+  displayName: Database Password
+  generate: expression
+  from: "[a-zA-Z0-9]{16}"
+- name: CRON_TIME
+  displayName: When to run the backup cronjob
+  description: Cron time string define when backup start (Ex 0 3 * * * - Run at 3am every day)
+  required: true
+  value: 0 3 * * *
+- name: DAYTODEL
+  displayName: Day duration
+  description: Day duration to keep backup file
+  required: false
+- name: LOCATION_STORAGE
+  displayName: Backup folder name (require for pvc method)
+  description: Directory's name of backup file
+  required: false
+  value: wordpress_dnstorytest
+- name: STORAGE_PVC
+  displayName: Backup Storage (require for pvc method)
+  description: The Pesistent Volumne Claim where back up database located
+  required: false
+  value: dn-story-test-backup-storage
+- name: AWS_ACCESS_KEY_ID
+  displayName: Amazon WebService Key ID (require for s3 method)
+  required: false
+  value: aws_access_key_id
+- name: AWS_SECRET_ACCESS_KEY
+  displayName: Amazon WebService Secret Key (require for s3 method)
+  required: false
+  value: aws_access_key_secret
+- name: AWS_BUCKET_NAME
+  displayName: Amazon WebService Bucket Name (require for s3 method)
+  required: false
+  value: s3://example
