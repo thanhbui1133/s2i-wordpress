@@ -28,7 +28,7 @@ datediff() {
 if [ $? -eq 0 ]; then
   echo Dump database $mysqlname ok
 else
-  echo FAILED Could not mysqldump database $mysqlname to "backup.sql"
+  >&2 echo FAILED Could not mysqldump database $mysqlname to "backup.sql"
   exit 1
 fi
 
@@ -57,18 +57,18 @@ for i in "${methodsArr[@]}"; do
         if [ $? -eq 0 ]; then
           echo "  Upload successful!"
         else
-          echo FAILED Could not aws s3 cp "backup.sql" "$object"
-          exit 2
+          >&2 echo FAILED Could not aws s3 cp "backup.sql" "$object"
+          exit 1
         fi
 
         if [ $? -eq 0 ]; then
           if [ -z $daytodel ]; then
-            echo "Can't found day duration"
+            >&2 echo "Can't found day duration"
           else
             echo "Check and deleting old file"
             list_time=(`aws s3 ls "$bucket/$folder" | awk '{ print $4 }'`)
             if [ ${#list_time[@]} -eq 0 ]; then
-              echo 'No file found'
+              >&2 echo 'No file found'
             else
               filteredFile=()
               for i in ${list_time[@]}; do
@@ -100,29 +100,30 @@ for i in "${methodsArr[@]}"; do
         if [ $? -eq 0 ]; then
           echo " Backup successful"
         else
-          echo FAILED Could not move "backup.sql" to specific folder
-          exit 2
+          >&2 echo FAILED Could not move "backup.sql" to specific folder
+          exit 1
         fi
 
         # Delete old files
         if [ $? -eq 0 ]; then
           echo "Check and deleting old file"
           if [ -z $daytodel ]; then
-            echo "Can't found day duration"
+            >&2 echo "Can't found day duration"
           else
             find "/data/backup/$folder" -type f -name '*.sql' -mtime +"$daytodel" -exec rm {} \;
             if [ $? -eq 0 ]; then
               echo OK Deleted old files in "/data/backup/$folder" before "$daytodel"
             else
-              echo FAILED Could not delete old files in "/data/backup/$folder" before "$daytodel"
-              exit 2
+              >&2 echo FAILED Could not delete old files in "/data/backup/$folder" before "$daytodel"
+              exit 1
             fi
           fi
         fi
 
         ;;
         *)
-		  echo "Method is none or invalid"
+		  >&2 echo "Method is none or invalid"
+		  exit 1
 		;;
     esac
 done
@@ -132,4 +133,4 @@ unset IFS
 # Delete
 rm -f "backup.sql"
 
-echo "Done"
+>&1 echo "Done"

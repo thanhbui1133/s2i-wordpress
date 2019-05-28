@@ -15,7 +15,7 @@ backuppath=""
 find_latest_bk() {
     if [ -z "$1" ]
     then
-        echo No variable found
+        >&2 echo No variable found
         exit 1
     else
         dirbackup=$1
@@ -71,14 +71,16 @@ case "$method" in
         if [ $? -ne 0 ]; then
             echo 'This is not sql file'
             if aws s3 ls "$object" 2>&1 | grep -q 'NoSuchBucket\|AllAccessDisabled'; then
-                    echo This bucket is not exist or access denied
+                    >&2 echo This bucket is not exist or access denied
+                    exit 1
                 else
                     echo Finding latest backup at "$object"...
                     grep -e ".*\/$" <<< $object
                     if [ $? -ne 0 ]; then object+="/"; fi
                     dirbackup=(`aws s3 ls "$object" | awk '{ print $4 }'`)
                     if [ ${#dirbackup[@]} -eq 0 ]; then
-                        echo 'No file found'
+                        >&2 echo 'No file found'
+                        exit 1
                     else
                         filteredFile=()
                         for i in ${dirbackup[@]}; do
@@ -121,12 +123,14 @@ case "$method" in
                     done
                 fi
                 if aws s3 ls "$bucketstr" 2>&1 | grep -q 'NoSuchBucket\|AllAccessDisabled'; then
-                    echo This bucket is not exist or access denied
+                    >&2 echo This bucket is not exist or access denied
+                    exit 1
                 else
                     echo FAILED Could not get from s3 "backup.sql" from "$object". Finding latest backup at "$bucketstr"
                     dirbackup=(`aws s3 ls "$bucketstr" | awk '{ print $4 }'`)
                     if [ ${#dirbackup[@]} -eq 0 ]; then
-                        echo 'No file found'
+                        >&2 echo 'No file found'
+                        exit 1
                     else
                         filteredFile=()
                         for i in ${dirbackup[@]}; do
@@ -148,8 +152,8 @@ case "$method" in
             echo "Backup file was entered not found!"
             location_temp=""
             if [ "$location" = "" ]; then
-                echo "Invalid input"
-                exit 4
+                >&2 echo "Invalid input"
+                exit 1
             else
                 echo Checking location
                 grep -e ".*\.sql$" <<< $location
@@ -187,12 +191,12 @@ case "$method" in
                     backuppath="/data/backup/$location_temp$nearestfile"
                     echo Found path: $backuppath
                 else
-                    echo "No backup file at directory"
-                    exit 0
+                    >&2 echo "No backup file at directory"
+                    exit 1
                 fi
             else
-                echo "Wrong file format"
-                exit 3
+                >&2 echo "Wrong file format"
+                exit 1
             fi
 
         else
@@ -200,7 +204,7 @@ case "$method" in
             backuppath=$location
         fi
         ;;
-    *) echo "Method is none or invalid"
+    *) >&2 echo "Method is none or invalid"
 	    exit 2
 		;;
     esac
@@ -221,7 +225,7 @@ if [ $? -eq 0 ]; then
 		fi
 		echo Done
 	else
-		echo FAILED to Import data;
+		>&2 echo FAILED to Import data;
 		exit 3
 	fi
 fi
