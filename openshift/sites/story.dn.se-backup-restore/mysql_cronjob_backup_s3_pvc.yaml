@@ -4,8 +4,8 @@ apiVersion: v1
 metadata:
   name: mysql-schedule-backup-to-s3
   annotations:
-    openshift.io/display-name: "MySQL Schedule backup to S3"
-    description: Application for schedule backup from MySQL database to S3 services
+    openshift.io/display-name: "MySQL Schedule backup to S3 or PVC"
+    description: Application for schedule backup from MySQL database to S3 services, or to PVC
     tags: mysql,s3aws
     iconClass: icon-mysql-database
 message: |-
@@ -91,12 +91,10 @@ objects:
 parameters:
 - name: NAME
   displayName: Name of schedule job
-  description: The name assigned to all of the frontend objects defined in this template.
   required: true
   value: dn-story-test-backup-job
 - name: IMAGE
   displayName: Name of image
-  description: The image name assigned to all of the frontend objects defined in this template.
   required: true
   value: docker-registry.default.svc:5000/dn-story-test/job-container
 - name: METHODS
@@ -126,7 +124,7 @@ parameters:
   from: "[a-zA-Z0-9]{16}"
 - name: CRON_TIME
   displayName: When to run the backup cronjob
-  description: Cron time string define when backup start (Ex 0 3 * * * - Run at 3am every day)
+  description: Cron time string define when backup start (Ex 0 3 * * * - Run at 3AM every day)
   required: true
   value: 0 3 * * *
 - name: DAYTODEL

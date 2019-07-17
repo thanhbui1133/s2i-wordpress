@@ -108,7 +108,7 @@ for i in "${methodsArr[@]}"; do
         if [ $? -eq 0 ]; then
           echo "Check and deleting old file"
           if [ -z $daytodel ]; then
-            >&2 echo "Can't found day duration"
+            >&2 echo "Can't find day duration"
           else
             find "/data/backup/$folder" -type f -name '*.sql' -mtime +"$daytodel" -exec rm {} \;
             if [ $? -eq 0 ]; then

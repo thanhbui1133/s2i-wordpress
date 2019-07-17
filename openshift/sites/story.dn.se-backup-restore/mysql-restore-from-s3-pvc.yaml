@@ -4,7 +4,7 @@ apiVersion: v1
 metadata:
   name: mysql-restore-from-s3
   annotations:
-    openshift.io/display-name: "Restore/import database from S3"
+    openshift.io/display-name: "MySQL restore/import from S3 or PVC"
     description: Application for restore or import from sql file to mysql host
     tags: mysql,s3aws
     iconClass: icon-mysql-database
@@ -29,23 +29,27 @@ objects:
   apiVersion: batch/v1
   metadata:
     name: "${NAME}"
-  spec:    
+  spec:
     template:
       metadata:
         name: "${NAME}"
       spec:
         containers:
         - name: restore
-          image: thanhbui1133/backup_restore_s3_openshift
+          image: "${IMAGE}"
           imagePullPolicy: Always
-          command: ["/var/lib/mysql/bin/mysql_s3_restore.sh"]
+          command: ["/bin/sh"]
+          args: ["/var/lib/mysql/bin/mysql_s3_restore.sh"]
+          volumeMounts:
+          - mountPath: /data/backup
+            name: ${NAME}
           env:
           - name: MYSQL_HOST
             value: "${DATABASE_HOST}"
           - name: MYSQL_NAME
             value: "${DATABASE_NAME}"
           - name: MYSQL_PORT
-            value: "${DATABASE_PORT}" 
+            value: "${DATABASE_PORT}"
           - name: MYSQL_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -67,15 +71,31 @@ objects:
                 name: "${NAME}-secret"
                 key: aws-secret-access-key
           - name: AWS_BUCKET_PATH
-            value: "${AWS_BUCKET}" 
+            value: "${AWS_BUCKET}"
           - name: SITE_URL
-            value: "${SITE_URL}"              
+            value: "${SITE_URL}"
+          - name: METHODS
+            value: "${METHODS}"
+          - name: LOCATION
+            value: "${LOCATION}"
+        volumes:
+        - name: ${NAME}
+          persistentVolumeClaim:
+            claimName: ${DB_PVC}
         restartPolicy: OnFailure
 parameters:
 - name: NAME
   displayName: Name of job
-  description: The name assigned to all of the frontend objects defined in this template.
   required: true
+- name: IMAGE
+  displayName: Name of image
+  required: true
+  value: docker-registry.default.svc:5000/dn-story-test/job-container
+- name: METHODS
+  displayName: Backup method
+  description: 'values: "s3", "pvc", "none"'
+  required: true
+  value: s3
 - name: DATABASE_HOST
   displayName: Database Host
   required: true
@@ -83,13 +103,13 @@ parameters:
 - name: DATABASE_PORT
   displayName: Database port
   required: true
-  value: database_port  
+  value: database_port
 - name: DATABASE_NAME
   displayName: Database Name
   required: true
   value: wordpress
 - name: DATABASE_USER
-  displayName: Database Usermysql
+  displayName: Database User
   required: true
   value: wordpress
 - name: DATABASE_PASSWORD
@@ -97,18 +117,31 @@ parameters:
   generate: expression
   from: "[a-zA-Z0-9]{16}"
 - name: SITE_URL
-  displayName: Website url for change siteurl/home value in database
+  displayName: Website url for changing siteurl/home value in database
+  description: Empty or type "none" for no change
   required: false
-  value: https://wordpress.org
+  value: none
 - name: AWS_ACCESS_KEY_ID
   displayName: Amazon WebService Key ID
-  required: true
+  description: This field requires for aws s3 method
+  required: false
   value: aws_access_key_id
 - name: AWS_SECRET_ACCESS_KEY
   displayName: Amazon WebService Secret Key
-  required: true
+  description: This field requires for aws s3 method
+  required: false
   value: aws_access_key_secret
 - name: AWS_BUCKET
   displayName: Amazon Bucket file path
-  required: true
-  value: s3://example/EX_dd_mm_yy/backup.sql
+  description: Location recipe {bucket folder url}/{Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file time or input {bucket folder url}/{Directory's name of backup file} for finding the lastest backup file (require for aws s3 method)
+  required: false
+  value: s3://example/wordpress_dnstorytest/04_22_2019_02_30_00.sql
+- name: LOCATION
+  displayName: Database backup directory/file (require for pvc method)
+  description: Location recipe {Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file time or input {Directory's name of backup file} for finding the lastest backup file (Base directory data/backup)
+  required: false
+  value: wordpress_dnstorytest/04_22_2019_02_30_00.sql
+- name: DB_PVC
+  displayName: Database backup PVC (require for pvc method)
+  required: false
+  value: dn-story-test-backup-storage

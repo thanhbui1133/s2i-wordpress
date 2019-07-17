@@ -69,12 +69,12 @@ case "$method" in
         grep -e ".*\.sql$" <<< $object
 
         if [ $? -ne 0 ]; then
-            echo 'This is not sql file'
+            echo 'This is not a sql file'
             if aws s3 ls "$object" 2>&1 | grep -q 'NoSuchBucket\|AllAccessDisabled'; then
                     >&2 echo This bucket is not exist or access denied
                     exit 1
                 else
-                    echo Finding latest backup at "$object"...
+                    echo Finding the latest backup at "$object"...
                     grep -e ".*\/$" <<< $object
                     if [ $? -ne 0 ]; then object+="/"; fi
                     dirbackup=(`aws s3 ls "$object" | awk '{ print $4 }'`)
@@ -88,7 +88,7 @@ case "$method" in
                             filteredFile+=($element)
                         done
                         nearestfile="$(find_latest_bk $filteredFile)"
-                        echo Found latest path: $object/$nearestfile
+                        echo Found the latest path: $object/$nearestfile
                         echo "Downloading..."
                         aws s3 cp "$object/$nearestfile" "backup.sql"
                         backuppath="backup.sql"
@@ -138,7 +138,7 @@ case "$method" in
                             filteredFile+=($element)
                         done
                         nearestfile="$(find_latest_bk $filteredFile $targetstamp)"
-                        echo Found latest path: $bucketstr$nearestfile
+                        echo Found the latest path: $bucketstr$nearestfile
                         echo "Downloading..."
                         aws s3 cp "$bucketstr$nearestfile" "backup.sql"
                         backuppath="backup.sql"
@@ -149,7 +149,7 @@ case "$method" in
         ;;
     "pvc") echo "Starting pvc restore..."
         if [[ ! -f "/data/backup/"$location || "$location" = "" ]]; then
-            echo "Backup file was entered not found!"
+            echo "Backup file not found!"
             location_temp=""
             if [ "$location" = "" ]; then
                 >&2 echo "Invalid input"
@@ -174,10 +174,10 @@ case "$method" in
                     unset IFS
                     targettime="${FILE_DATE[0]}/${FILE_DATE[1]}/${FILE_DATE[2]} ${FILE_DATE[3]}:${FILE_DATE[4]}:${FILE_DATE[5]}"
                     targetstamp=`date -d "$targettime" +"%s"`
-                    echo "Finding nearest backup..."
+                    echo "Finding the nearest backup..."
                 else
                     targetstamp=""
-                    echo "Finding lastest backup..."
+                    echo "Finding the lastest backup..."
                     location_temp=$location
                 fi
             fi

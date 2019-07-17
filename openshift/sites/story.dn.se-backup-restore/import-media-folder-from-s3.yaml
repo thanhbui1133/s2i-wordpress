@@ -4,7 +4,7 @@ apiVersion: v1
 metadata:
   name: import-media-folder-from-s3
   annotations:
-    openshift.io/display-name: "Import Media from S3"
+    openshift.io/display-name: "Import WP Media from S3"
     description: Application for restore or import from sql file to mysql host
     tags: file,s3aws
 message: |-
@@ -62,7 +62,6 @@ objects:
 parameters:
 - name: NAME
   displayName: Name of job
-  description: The name assigned to all of the frontend objects defined in this template.
   required: true
 - name: AWS_ACCESS_KEY_ID
   displayName: Amazon WebService Access Key ID

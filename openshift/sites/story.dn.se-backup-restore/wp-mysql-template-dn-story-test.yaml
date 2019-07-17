@@ -40,7 +40,10 @@ objects:
     wordpress-secure-auth-salt: "${WORDPRESS_SECURE_AUTH_SALT}"
     wordpress-logged-in-salt: "${WORDPRESS_LOGGED_IN_SALT}"
     wordpress-nonce-salt: "${WORDPRESS_NONCE_SALT}"
+    aws-access-key-id: "${AWS_ACCESS_KEY_ID}"
+    aws-secret-access-key: "${AWS_SECRET_ACCESS_KEY}"
     k8s-probe: "${K8S_PROBE}"
+
 - kind: Service
   apiVersion: v1
   metadata:
@@ -69,8 +72,6 @@ objects:
     name: "${NAME}"
     labels:
       app: "wordpress-${NAME}"
-    annotations:
-      haproxy.router.openshift.io/timeout: 15m
   spec:
     to:
       kind: Service
@@ -203,6 +204,12 @@ objects:
           #      - name: X-K8S-PROBE
           #        value: "${K8S_PROBE}"
           #    port: 8080
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c" , "cd wp-content; aws configure set aws_access_key_id '${AWS_ACCESS_KEY_ID}';
+                  aws configure set aws_secret_access_key '${AWS_SECRET_ACCESS_KEY}';
+                  aws s3 cp '${AWS_FILE_UPLOAD_PATH}' 'upload.tar'; tar -xvf 'upload.tar' upload;"]
           env:
           - name: WORDPRESS_DB_HOST
             value: "${NAME}-${DATABASE_SERVICE_NAME}"
@@ -296,11 +303,10 @@ objects:
       app: "wordpress-${NAME}"
   spec:
     accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
     resources:
       requests:
         storage: "${VOLUME_CAPACITY}"
-    storageClassName: nfs
 
 - kind: PersistentVolumeClaim
   apiVersion: v1
@@ -494,7 +500,7 @@ parameters:
   displayName: Git Reference
   description: Set this to a branch name, tag or other ref of your repository if you
     are not using the default branch.
-  #Branch 'dev_test_deploy' removed wp-config.php	
+  #Branch 'dev_test_deploy' removed wp-config.php
   value: 'dev_test_deploy'
 - name: CONTEXT_DIR
   displayName: Context Directory
@@ -607,3 +613,15 @@ parameters:
   displayName: Use advanced-cache.php
   description: Enable caching
   value: "false"
+- name: AWS_ACCESS_KEY_ID
+  displayName: Amazon WebService Key ID
+  required: false
+  value: aws_access_key_id
+- name: AWS_SECRET_ACCESS_KEY
+  displayName: Amazon WebService Secret Key
+  required: false
+  value: aws_access_key_secret
+- name: AWS_FILE_UPLOAD_PATH
+  displayName: Amazon Bucket file path
+  required: false
+  value: s3://example/EX_dd_mm_yy/backup.sql
