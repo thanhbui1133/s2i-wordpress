@@ -6,7 +6,7 @@ labels:
 message: 'The following service(s) have been created in your project: ${NAME}.'
 metadata:
   annotations:
-    description: Application for create persistemt volume claim for backup file
+    description: For creating PVC (persistent volume claim) to store backup file(s)
     iconClass: icon-openshift
     openshift.io/display-name: Persistent Volume Creator
     tags: 'mysql,s3aws,pvc'
