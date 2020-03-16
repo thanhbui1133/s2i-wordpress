@@ -2,16 +2,16 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: mysql-schedule-backup-to-s3
+  name: mysql-schedule-backup-to-s3-pvc
   annotations:
     openshift.io/display-name: "MySQL Schedule backup to S3 or PVC"
     description: Application for schedule backup from MySQL database to S3 services, or to PVC
     tags: mysql,s3aws
     iconClass: icon-mysql-database
 message: |-
-  The following service(s) have been created in your project: ${NAME}.
+  ${NAME} has been created in your project.
 labels:
-  template: mysql-schedule-backup-to-s3
+  template: mysql-schedule-backup-to-s3-pvc
   app: "wordpress"
 objects:
 - kind: Secret
@@ -82,7 +82,7 @@ objects:
               - name: AWS_BUCKET
                 value: "${AWS_BUCKET_NAME}"
               - name: LOCATION_STORAGE
-                value: "${LOCATION_STORAGE}"
+                value: "${LOCATION_PVC}"
             volumes:
             - name: "${STORAGE_PVC}-data"
               persistentVolumeClaim:
@@ -105,17 +105,16 @@ parameters:
 - name: DATABASE_HOST
   displayName: Database Host
   required: true
-  value: database_host
 - name: DATABASE_PORT
-  displayName: Database port
+  displayName: Database Port
   required: true
-  value: database_port
+  value: '3306'
 - name: DATABASE_NAME
   displayName: Database Name
   required: true
   value: wordpress
 - name: DATABASE_USER
-  displayName: Database Usermysql
+  displayName: Database Username
   required: true
   value: wordpress
 - name: DATABASE_PASSWORD
@@ -131,25 +130,26 @@ parameters:
   displayName: Day duration
   description: Day duration to keep backup file
   required: false
-- name: LOCATION_STORAGE
-  displayName: Backup folder name (require for pvc method)
-  description: Directory's name of backup file
-  required: false
-  value: wordpress_dnstorytest
+  value: '10'
 - name: STORAGE_PVC
-  displayName: Backup Storage (require for pvc method)
-  description: The Pesistent Volumne Claim where back up database located
+  displayName: Backup Storage (require for PVC method)
+  description: The Pesistent Volumne Claim where backup files locate
   required: false
   value: dn-story-test-backup-storage
+- name: LOCATION_PVC
+  displayName: Backup folder name (require for PVC method)
+  description: Directory's name of backup file
+  required: false
+  value: wordpress_backup
 - name: AWS_ACCESS_KEY_ID
-  displayName: Amazon WebService Key ID (require for s3 method)
+  displayName: Amazon WebService Key ID (require for S3 method)
   required: false
   value: aws_access_key_id
 - name: AWS_SECRET_ACCESS_KEY
-  displayName: Amazon WebService Secret Key (require for s3 method)
+  displayName: Amazon WebService Secret Key (require for S3 method)
   required: false
   value: aws_access_key_secret
 - name: AWS_BUCKET_NAME
-  displayName: Amazon WebService Bucket Name (require for s3 method)
+  displayName: Amazon WebService Bucket Name (require for S3 method)
   required: false
   value: s3://example

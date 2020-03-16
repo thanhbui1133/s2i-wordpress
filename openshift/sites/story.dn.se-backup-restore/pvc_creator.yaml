@@ -3,7 +3,7 @@ kind: Template
 labels:
   app: wordpress
   template: pvc-storage-creator-template
-message: 'The following service(s) have been created in your project: ${NAME}.'
+message: '${NAME} has been created in your project.'
 metadata:
   annotations:
     description: For creating PVC (persistent volume claim) to store backup file(s)
