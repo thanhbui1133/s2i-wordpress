@@ -5,7 +5,7 @@ metadata:
   name: mysql-restore-from-s3-pvc
   annotations:
     openshift.io/display-name: "MySQL restore/import from S3 or PVC"
-    description: Application for restore or import from sql file to mysql host
+    description: Application (a scheduled job that runs only once) for restoring or importing from SQL file to MySQL database
     tags: mysql,s3aws
     iconClass: icon-mysql-database
 message: |-
@@ -77,11 +77,11 @@ objects:
           - name: METHODS
             value: "${METHODS}"
           - name: LOCATION
-            value: "${LOCATION}"
+            value: "${LOCATION_PVC}"
         volumes:
         - name: ${NAME}
           persistentVolumeClaim:
-            claimName: ${DB_PVC}
+            claimName: ${STORAGE_PVC}
         restartPolicy: OnFailure
 parameters:
 - name: NAME
@@ -132,16 +132,17 @@ parameters:
   required: false
   value: aws_access_key_secret
 - name: AWS_BUCKET
-  displayName: Amazon Bucket file path
-  description: Location recipe {bucket folder url}/{Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file time or input {bucket folder url}/{Directory's name of backup file} for finding the lastest backup file (require for aws s3 method)
+  displayName: Amazon Bucket file path (require for AWS S3 method)
+  description: Use format {bucket folder url}/{Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file to the specified time, or {bucket folder url}/{Directory's name of backup file} for finding the latest backup file
   required: false
   value: s3://example/wordpress_dnstorytest/04_22_2019_02_30_00.sql
-- name: LOCATION
-  displayName: Database backup directory/file (require for PVC method)
-  description: Location recipe {Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file time or input {Directory's name of backup file} for finding the lastest backup file (Base directory data/backup)
-  required: false
-  value: wordpress_dnstorytest/04_22_2019_02_30_00.sql
-- name: DB_PVC
-  displayName: Database backup PVC (require for PVC method)
+- name: STORAGE_PVC
+  displayName: Backup Storage (require for PVC method)
+  description: The Pesistent Volumne Claim where backup files locate
   required: false
   value: dn-story-test-backup-storage
+- name: LOCATION_PVC
+  displayName: Database backup directory/file (require for PVC method)
+  description: Use format {Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file to the specified time, or {Directory's name of backup file} for finding the latest backup file
+  required: false
+  value: wordpress_dnstorytest/04_22_2019_02_30_00.sql

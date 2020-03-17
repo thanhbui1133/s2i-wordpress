@@ -6,7 +6,7 @@ metadata:
   annotations:
     openshift.io/display-name: "MySQL Schedule backup to S3 or PVC"
     description: Application for schedule backup from MySQL database to S3 services, or to PVC
-    tags: mysql,s3aws
+    tags: mysql,s3aws,pvc
     iconClass: icon-mysql-database
 message: |-
   ${NAME} has been created in your project.
