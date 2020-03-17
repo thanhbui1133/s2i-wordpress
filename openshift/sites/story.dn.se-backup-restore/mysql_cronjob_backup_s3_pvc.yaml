@@ -142,14 +142,14 @@ parameters:
   required: false
   value: wordpress_backup
 - name: AWS_ACCESS_KEY_ID
-  displayName: Amazon WebService Key ID (require for S3 method)
+  displayName: Amazon WebService Key ID (require for AWS S3 method)
   required: false
   value: aws_access_key_id
 - name: AWS_SECRET_ACCESS_KEY
-  displayName: Amazon WebService Secret Key (require for S3 method)
+  displayName: Amazon WebService Secret Key (require for AWS S3 method)
   required: false
   value: aws_access_key_secret
 - name: AWS_BUCKET_NAME
-  displayName: Amazon WebService Bucket Name (require for S3 method)
+  displayName: Amazon WebService Bucket Name (require for AWS S3 method)
   required: false
   value: s3://example

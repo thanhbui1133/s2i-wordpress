@@ -2,16 +2,16 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: mysql-restore-from-s3
+  name: mysql-restore-from-s3-pvc
   annotations:
     openshift.io/display-name: "MySQL restore/import from S3 or PVC"
     description: Application for restore or import from sql file to mysql host
     tags: mysql,s3aws
     iconClass: icon-mysql-database
 message: |-
-  The following service(s) have been created in your project: ${NAME}.
+  ${NAME} has been created in your project.
 labels:
-  template: mysql-restore-from-s3-template
+  template: mysql-restore-from-s3-pvc-template
   app: "wordpress"
 objects:
 - kind: Secret
@@ -101,9 +101,9 @@ parameters:
   required: true
   value: database_host
 - name: DATABASE_PORT
-  displayName: Database port
+  displayName: Database Port
   required: true
-  value: database_port
+  value: '3306'
 - name: DATABASE_NAME
   displayName: Database Name
   required: true
@@ -123,12 +123,12 @@ parameters:
   value: none
 - name: AWS_ACCESS_KEY_ID
   displayName: Amazon WebService Key ID
-  description: This field requires for aws s3 method
+  description: This field requires for AWS S3 method
   required: false
   value: aws_access_key_id
 - name: AWS_SECRET_ACCESS_KEY
   displayName: Amazon WebService Secret Key
-  description: This field requires for aws s3 method
+  description: This field requires for AWS S3 method
   required: false
   value: aws_access_key_secret
 - name: AWS_BUCKET
@@ -137,11 +137,11 @@ parameters:
   required: false
   value: s3://example/wordpress_dnstorytest/04_22_2019_02_30_00.sql
 - name: LOCATION
-  displayName: Database backup directory/file (require for pvc method)
+  displayName: Database backup directory/file (require for PVC method)
   description: Location recipe {Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file time or input {Directory's name of backup file} for finding the lastest backup file (Base directory data/backup)
   required: false
   value: wordpress_dnstorytest/04_22_2019_02_30_00.sql
 - name: DB_PVC
-  displayName: Database backup PVC (require for pvc method)
+  displayName: Database backup PVC (require for PVC method)
   required: false
   value: dn-story-test-backup-storage
