@@ -37,7 +37,7 @@ IFS=","
 len=${#methods[@]}
 echo Found $len method:
 
-for (( i=0; i<$len; i++ )); do echo "- ${methods[$i]}\n" ; done
+for (( i=0; i<$len; i++ )); do echo "$i- ${methods[$i]}     "; done
 
 read -ra methodsArr <<< "$methods"
 unset IFS
@@ -100,7 +100,7 @@ for i in "${methodsArr[@]}"; do
         if [ $? -eq 0 ]; then
           echo " Backup successful"
         else
-          >&2 echo FAILED Could not move "backup.sql" to specific folder
+          >&2 echo FAILED Could not move "backup.sql" to a specific folder
           exit 1
         fi
 
@@ -112,9 +112,9 @@ for i in "${methodsArr[@]}"; do
           else
             find "/data/backup/$folder" -type f -name '*.sql' -mtime +"$daytodel" -exec rm {} \;
             if [ $? -eq 0 ]; then
-              echo OK Deleted old files in "/data/backup/$folder" before "$daytodel"
+              echo OK Deleted old files in "/data/backup/$folder" before "$daytodel" days from today
             else
-              >&2 echo FAILED Could not delete old files in "/data/backup/$folder" before "$daytodel"
+              >&2 echo FAILED Could not delete old files in "/data/backup/$folder" before "$daytodel" days from today
               exit 1
             fi
           fi
