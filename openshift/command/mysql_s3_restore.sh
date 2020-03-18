@@ -181,9 +181,8 @@ case "$method" in
                     targetstamp=""
                     echo "  Finding the latest backup..."
                     location_temp=$location
-					if [[ "$location_temp" != */ ]]
-					then
-						location_temp += "/"
+					if [[ "$location_temp" != */ ]]; then
+						location_temp+="/"
 					fi
                 fi
             fi
