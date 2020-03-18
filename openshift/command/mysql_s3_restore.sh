@@ -61,7 +61,7 @@ find_latest_bk() {
 }
 
 case "$method" in
-    "s3") echo "Starting s3 restore..."
+    "s3") echo "Starting AWS S3 restore..."
         echo "Setup environment"
         aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
         aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
@@ -73,7 +73,7 @@ case "$method" in
         if [ $? -ne 0 ]; then
             echo 'This is not a sql file'
             if aws s3 ls "$object" 2>&1 | grep -q 'NoSuchBucket\|AllAccessDisabled'; then
-                    >&2 echo This bucket is not exist or access denied
+                    >&2 echo This bucket does not exist or access denied
                     exit 1
                 else
                     echo Finding the latest backup at "$object"...
@@ -90,7 +90,7 @@ case "$method" in
                             filteredFile+=($element)
                         done
                         nearestfile="$(find_latest_bk $filteredFile)"
-                        echo Found the latest path: $object/$nearestfile
+                        echo Found the latest file path: $object/$nearestfile
                         echo "Downloading..."
                         aws s3 cp "$object/$nearestfile" "backup.sql"
                         backuppath="backup.sql"
@@ -128,7 +128,7 @@ case "$method" in
                     >&2 echo This bucket is not exist or access denied
                     exit 1
                 else
-                    echo FAILED Could not get from s3 "backup.sql" from "$object". Finding latest backup at "$bucketstr"
+                    echo FAILED Could not get "backup.sql" from S3 "$object". Finding the latest backup at "$bucketstr"
                     dirbackup=(`aws s3 ls "$bucketstr" | awk '{ print $4 }'`)
                     if [ ${#dirbackup[@]} -eq 0 ]; then
                         >&2 echo 'No file found'
@@ -157,7 +157,7 @@ case "$method" in
                 >&2 echo "Invalid input"
                 exit 1
             else
-                echo Checking location
+                echo Checking location to find a backup file to restore
                 grep -e ".*\.sql$" <<< $location
                 if [ $? -eq 0 ]; then
                     IFS="/"
@@ -170,16 +170,16 @@ case "$method" in
                             location_temp+="/"
                         fi
                     done
-                    targettime=`echo "$filename" | sed -r 's/[.sql]+//g'`
+                    targettime=`echo "  $filename" | sed -r 's/[.sql]+//g'`
                     IFS="_"
                     read -ra FILE_DATE <<< "$targettime"
                     unset IFS
                     targettime="${FILE_DATE[0]}/${FILE_DATE[1]}/${FILE_DATE[2]} ${FILE_DATE[3]}:${FILE_DATE[4]}:${FILE_DATE[5]}"
                     targetstamp=`date -d "$targettime" +"%s"`
-                    echo "Finding the nearest backup..."
+                    echo "  Finding the nearest backup..."
                 else
                     targetstamp=""
-                    echo "Finding the lastest backup..."
+                    echo "  Finding the latest backup..."
                     location_temp=$location
                 fi
             fi
@@ -191,9 +191,9 @@ case "$method" in
                     nearest=""
                     nearestfile="$(find_latest_bk $dirbackup $targetstamp)"
                     backuppath="/data/backup/$location_temp$nearestfile"
-                    echo Found path: $backuppath
+                    echo Found file: $backuppath
                 else
-                    >&2 echo "No backup file at directory"
+                    >&2 echo "No backup file in the directory"
                     exit 1
                 fi
             else
@@ -202,7 +202,7 @@ case "$method" in
             fi
 
         else
-            echo "Backup file found"
+            echo "Backup file found!"
             backuppath=$location
         fi
         ;;
@@ -212,8 +212,10 @@ case "$method" in
     esac
 if [ $? -eq 0 ]; then
 
+	echo Dropping the database: $mysqlname 
 	/opt/rh/rh-mysql57/root/usr/bin/mysqladmin -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force drop $mysqlname
 
+	echo Creating a new database and restore the backup: $mysqlname
 	/opt/rh/rh-mysql57/root/usr/bin/mysqladmin -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force create $mysqlname
 
 	if [ $? -eq 0 ]; then
@@ -224,12 +226,11 @@ if [ $? -eq 0 ]; then
 
 		if [ "$siteurl" != "" ] && [ "$siteurl" != "none" ]; then
 			/opt/rh/rh-mysql57/root/usr/bin/mysql -u $mysqluser -P $mysqlport -h $mysqlhost -p$mysqlpass --force -D $mysqlname -e "UPDATE wp_options SET option_value = '$siteurl' where option_name = 'siteurl' or option_name = 'home'"
+			echo Replaced Site URL and Home URL with the specified value
 		fi
-		echo Done
+		echo Done restoring database
 	else
 		>&2 echo FAILED to Import data;
 		exit 3
 	fi
 fi
-
-

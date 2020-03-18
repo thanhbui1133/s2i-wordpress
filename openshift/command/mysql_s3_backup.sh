@@ -38,14 +38,14 @@ IFS=","
 len=${#methods[@]}
 echo Found $len method:
 
-for (( i=0; i<$len; i++ )); do echo "$i- ${methods[$i]}     "; done
+for (( i=0; i<$len; i++ )); do echo "$i-${methods[$i]}     "; done
 
 read -ra methodsArr <<< "$methods"
 unset IFS
 
 for i in "${methodsArr[@]}"; do
     case "$i" in
-        "s3") echo "Starting s3 backup..."
+        "s3") echo "Starting AWS S3 backup..."
 
         echo "Setup environment"
         aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"

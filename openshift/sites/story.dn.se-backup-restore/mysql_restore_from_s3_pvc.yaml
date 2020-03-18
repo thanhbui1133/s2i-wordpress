@@ -122,20 +122,18 @@ parameters:
   required: false
   value: none
 - name: AWS_ACCESS_KEY_ID
-  displayName: Amazon WebService Key ID
-  description: This field requires for AWS S3 method
+  displayName: Amazon WebService Key ID (require for AWS S3 method)
   required: false
   value: aws_access_key_id
 - name: AWS_SECRET_ACCESS_KEY
-  displayName: Amazon WebService Secret Key
-  description: This field requires for AWS S3 method
+  displayName: Amazon WebService Secret Key (require for AWS S3 method)
   required: false
   value: aws_access_key_secret
 - name: AWS_BUCKET
   displayName: Amazon Bucket file path (require for AWS S3 method)
   description: Use format {bucket folder url}/{Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file to the specified time, or {bucket folder url}/{Directory's name of backup file} for finding the latest backup file
   required: false
-  value: s3://example/wordpress_dnstorytest/04_22_2019_02_30_00.sql
+  value: s3://example/wordpress_dnstorytest/04_22_2019_03_00_00.sql
 - name: STORAGE_PVC
   displayName: Backup Storage (require for PVC method)
   description: The Pesistent Volumne Claim where backup files locate
@@ -145,4 +143,4 @@ parameters:
   displayName: Database backup directory/file (require for PVC method)
   description: Use format {Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file to the specified time, or {Directory's name of backup file} for finding the latest backup file
   required: false
-  value: wordpress_dnstorytest/04_22_2019_02_30_00.sql
+  value: wordpress_dnstorytest/04_22_2019_03_00_00.sql
