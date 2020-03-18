@@ -1,0 +1,39 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  app: wordpress
+  template: pvc-storage-creator-template
+message: '${NAME} has been created in your project.'
+metadata:
+  annotations:
+    description: For creating PVC (persistent volume claim) to store backup file(s)
+    iconClass: icon-openshift
+    openshift.io/display-name: Persistent Volume Creator
+    tags: 'mysql,s3aws,pvc'
+  name: pvc-storage-creator
+  namespace: bn-academy-stage
+objects:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      labels:
+        app: 'wordpress-${NAME}'
+      name: '${NAME}'
+    spec:
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: '${WORDPRESS_VOLUME_CAPACITY}'
+      storageClassName: nfs
+parameters:
+  - description: The name assigned to all of the frontend objects defined in this template.
+    displayName: Name
+    name: NAME
+    required: true
+    value: bn-academy-stage-backup-storage
+  - description: 'Volume space available for Wordpress data, e.g. 512Mi, 2Gi'
+    displayName: Wordpress Volume Capacity
+    name: WORDPRESS_VOLUME_CAPACITY
+    required: true
+    value: 3Gi

@@ -1,0 +1,138 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: mysql-restore-from-s3-pvc
+  annotations:
+    openshift.io/display-name: "MySQL restore/import from S3 or PVC"
+    description: Application (a scheduled job that runs only once) for restoring or importing from SQL file to MySQL database
+    tags: mysql,s3aws,pvc
+    iconClass: icon-mysql-database
+message: |-
+  ${NAME} has been created in your project.
+labels:
+  template: mysql-restore-from-s3-pvc-template
+  app: "wordpress"
+objects:
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: "${NAME}-s3-secret"
+    labels:
+      app: "wordpress-${NAME}"
+  stringData:
+    aws-access-key-id: "${AWS_ACCESS_KEY_ID}"
+    aws-secret-access-key: "${AWS_SECRET_ACCESS_KEY}"
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: "${NAME}"
+  spec:
+    template:
+      metadata:
+        name: "${NAME}"
+      spec:
+        containers:
+        - name: restore
+          image: "${IMAGE}"
+          imagePullPolicy: Always
+          command: ["/bin/sh"]
+          args: ["/var/lib/mysql/bin/mysql_s3_restore.sh"]
+          volumeMounts:
+          - mountPath: /data/backup
+            name: ${NAME}
+          env:
+          - name: MYSQL_HOST
+            value: "${DATABASE_HOST}"
+          - name: MYSQL_NAME
+            value: "${DATABASE_NAME}"
+          - name: MYSQL_PORT
+            value: "${DATABASE_PORT}"
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "${DATABASE_SECRET_NAME}"
+                key: database-password
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: "${DATABASE_SECRET_NAME}"
+                key: database-user
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: "${NAME}-s3-secret"
+                key: aws-access-key-id
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: "${NAME}-s3-secret"
+                key: aws-secret-access-key
+          - name: AWS_BUCKET_PATH
+            value: "${AWS_BUCKET}"
+          - name: SITE_URL
+            value: "${SITE_URL}"
+          - name: METHODS
+            value: "${METHODS}"
+          - name: LOCATION
+            value: "${LOCATION_PVC}"
+        volumes:
+        - name: ${NAME}
+          persistentVolumeClaim:
+            claimName: ${STORAGE_PVC}
+        restartPolicy: OnFailure
+parameters:
+- name: NAME
+  displayName: Name of job
+  required: true
+  value: bn-academy-stage-restore-job-runonce
+- name: IMAGE
+  displayName: Name of image
+  required: true
+  value: docker-registry.default.svc:5000/bn-academy-stage/job-container
+- name: METHODS
+  displayName: Backup method
+  description: 'values: "s3", "pvc", "none"'
+  required: true
+  value: pvc
+- name: DATABASE_HOST
+  displayName: Database Host
+  required: true
+- name: DATABASE_PORT
+  displayName: Database Port
+  required: true
+  value: '3306'
+- name: DATABASE_NAME
+  displayName: Database Name
+  required: true
+  value: wordpress
+- name: DATABASE_SECRET_NAME
+  displayName: Name of Secret where database-password and database-user stored
+  required: true
+  value: bonniernews-academy-stage
+- name: SITE_URL
+  displayName: Website url for changing siteurl/home value in database after restored
+  description: Empty or type "none" for no change
+  required: false
+  value: none
+- name: STORAGE_PVC
+  displayName: Backup Storage (require for PVC method)
+  description: The Pesistent Volumne Claim where backup files locate
+  required: false
+  value: bn-academy-stage-backup-storage
+- name: LOCATION_PVC
+  displayName: Database backup directory/file (require for PVC method)
+  description: Use format {Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file to the specified time, or {Directory's name of backup file} for finding the latest backup file
+  required: false
+  value: wordpress_backup/03_22_2020_03_00_00.sql
+- name: AWS_ACCESS_KEY_ID
+  displayName: Amazon WebService Key ID (require for AWS S3 method)
+  required: false
+- name: AWS_SECRET_ACCESS_KEY
+  displayName: Amazon WebService Secret Key (require for AWS S3 method)
+  required: false
+- name: AWS_BUCKET
+  displayName: Amazon Bucket file path (require for AWS S3 method)
+  description: Use format {bucket folder url}/{Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file to the specified time, or {bucket folder url}/{Directory's name of backup file} for finding the latest backup file
+  required: false
+  value: s3://example/wordpress_backup/03_22_2020_03_00_00.sql

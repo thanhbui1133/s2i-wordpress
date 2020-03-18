@@ -1,0 +1,27 @@
+kind: BuildConfig
+apiVersion: v1
+metadata:
+  annotations:
+    description: Build a container and push it to image streams
+  labels:
+    app: wordpress
+  name: bn-academy-job-container
+  namespace: bn-academy-stage
+spec:
+  output:
+    to:
+      kind: DockerImage
+      name: 'docker-registry.default.svc:5000/bn-academy-stage/job-container'
+  runPolicy: Serial
+  source:
+    git:
+      ref: master
+      uri: git@github.com:thanhbui1133/s2i-wordpress.git
+    sourceSecret:
+      name: deploy-git
+    type: Git
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: 'openshift/command/Dockerfile'
+  triggers: []
