@@ -75,17 +75,17 @@ objects:
           - name: METHODS
             value: "${METHODS}"
           - name: LOCATION
-            value: "${LOCATION_PVC}"
+            value: "${LOCATION_PVC_BACKUP}"
         volumes:
         - name: ${NAME}
           persistentVolumeClaim:
-            claimName: ${STORAGE_PVC}
+            claimName: ${STORAGE_PVC_BACKUP}
         restartPolicy: OnFailure
 parameters:
 - name: NAME
   displayName: Name of job
   required: true
-  value: bn-academy-stage-restore-job-runonce
+  value: bn-academy-stage-restore-db-job-runonce
 - name: IMAGE
   displayName: Name of image
   required: true
@@ -115,12 +115,12 @@ parameters:
   description: Empty or type "none" for no change
   required: false
   value: none
-- name: STORAGE_PVC
+- name: STORAGE_PVC_BACKUP
   displayName: Backup Storage (require for PVC method)
   description: The Pesistent Volumne Claim where backup files locate
   required: false
   value: bn-academy-stage-backup-storage
-- name: LOCATION_PVC
+- name: LOCATION_PVC_BACKUP
   displayName: Database backup directory/file (require for PVC method)
   description: Use format {Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file to the specified time, or {Directory's name of backup file} for finding the latest backup file
   required: false

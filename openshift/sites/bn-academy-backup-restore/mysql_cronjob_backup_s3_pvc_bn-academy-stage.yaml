@@ -5,7 +5,7 @@ metadata:
   name: mysql-schedule-backup-to-s3-pvc
   annotations:
     openshift.io/display-name: "MySQL Schedule backup to S3 or PVC"
-    description: Application for schedule backup from MySQL database to S3 services, or to PVC
+    description: Schedule backup from MySQL database to S3 services, or to PVC
     tags: mysql,s3aws,pvc
     iconClass: icon-mysql-database
 message: |-
@@ -45,7 +45,7 @@ objects:
               args: ["/var/lib/mysql/bin/mysql_s3_backup.sh"]
               volumeMounts:
               - mountPath: "/data/backup"
-                name: "${STORAGE_PVC}-data"
+                name: "${STORAGE_PVC_BACKUP}-data"
               env:
               - name: MYSQL_HOST
                 value: "${DATABASE_HOST}"
@@ -80,17 +80,17 @@ objects:
               - name: AWS_BUCKET
                 value: "${AWS_BUCKET_NAME}"
               - name: LOCATION_STORAGE
-                value: "${LOCATION_PVC}"
+                value: "${LOCATION_PVC_BACKUP}"
             volumes:
-            - name: "${STORAGE_PVC}-data"
+            - name: "${STORAGE_PVC_BACKUP}-data"
               persistentVolumeClaim:
-                claimName: ${STORAGE_PVC}
+                claimName: ${STORAGE_PVC_BACKUP}
             restartPolicy: OnFailure
 parameters:
 - name: NAME
   displayName: Name of schedule job
   required: true
-  value: bn-academy-stage-backup-job
+  value: bn-academy-stage-backup-db-job
 - name: IMAGE
   displayName: Name of image
   required: true
@@ -125,12 +125,12 @@ parameters:
   description: Day duration to keep backup file
   required: false
   value: '10'
-- name: STORAGE_PVC
+- name: STORAGE_PVC_BACKUP
   displayName: Backup Storage (require for PVC method)
   description: The Pesistent Volumne Claim where backup files locate
   required: false
   value: bn-academy-stage-backup-storage
-- name: LOCATION_PVC
+- name: LOCATION_PVC_BACKUP
   displayName: Backup folder name (require for PVC method)
   description: Directory's name of backup file
   required: false

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Note: /data/backup is the volume-mounted path to PVC (Persistent Volume Claim)
+# Note: /data/backup is the volume-mounted path to PVC (Persistent Volume Claim) to store backup files
 
 # Basic variables
 mysqlpass="$MYSQL_PASSWORD"
@@ -64,7 +64,7 @@ for i in "${methodsArr[@]}"; do
 
         if [ $? -eq 0 ]; then
           if [ -z $daytodel ]; then
-            >&2 echo "Can't found day duration"
+            >&2 echo "Can't find day duration"
           else
             echo "Check and deleting old file"
             list_time=(`aws s3 ls "$bucket/$folder" | awk '{ print $4 }'`)

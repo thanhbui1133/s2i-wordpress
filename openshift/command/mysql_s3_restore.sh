@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Note: /data/backup is the volume-mounted path to PVC (Persistent Volume Claim)
+# Note: /data/backup is the volume-mounted path to PVC (Persistent Volume Claim) to store backup files
 
 # Basic variables
 mysqlpass="$MYSQL_PASSWORD"
