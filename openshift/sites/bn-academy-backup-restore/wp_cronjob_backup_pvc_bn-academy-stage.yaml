@@ -1,0 +1,88 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: wp-schedule-backup-uploads-to-pvc
+  annotations:
+    openshift.io/display-name: "Schedule backup WP Uploads to PVC"
+    description: Schedule backup files from WordPress Uploads folder to PVC
+    tags: pvc
+    iconClass: icon-wordpress
+message: |-
+  ${NAME} has been created in your project.
+labels:
+  template: wp-schedule-backup-uploads-to-pvc
+  app: "wordpress"
+objects:
+- kind: CronJob
+  apiVersion: batch/v1beta1
+  metadata:
+    name: "${NAME}"
+  spec:
+    schedule: "${CRON_TIME}"
+    jobTemplate:
+      spec:
+        template:
+          metadata:
+            name: "${NAME}"
+            labels:
+              appName: "wordpress-${NAME}"
+          spec:
+            containers:
+            - name: backup
+              image: "${IMAGE}"
+              imagePullPolicy: Always
+              command: ["/bin/sh"]
+              args: ["/var/lib/mysql/bin/wp_uploads_backup.sh"]
+              volumeMounts:
+              - mountPath: /opt/app-root/wp-content
+                name: "${STORAGE_PVC_WP}-data"
+              - mountPath: "/data/backup"
+                name: "${STORAGE_PVC_BACKUP}-data"
+              env:
+              - name: DAYTODEL
+                value: "${DAYTODEL}"
+              - name: LOCATION_BACKUP
+                value: "${LOCATION_PVC_BACKUP}"
+            volumes:
+            - name: "${STORAGE_PVC_WP}-data"
+              persistentVolumeClaim:
+                claimName: ${STORAGE_PVC_WP}
+            - name: "${STORAGE_PVC_BACKUP}-data"
+              persistentVolumeClaim:
+                claimName: ${STORAGE_PVC_BACKUP}
+            restartPolicy: OnFailure
+parameters:
+- name: NAME
+  displayName: Name of schedule job
+  required: true
+  value: bn-academy-stage-backup-wp-uploads-job
+- name: IMAGE
+  displayName: Name of image
+  required: true
+  value: docker-registry.default.svc:5000/bn-academy-stage/job-container
+- name: CRON_TIME
+  displayName: When to run the backup cronjob
+  description: Cron time string define when backup start (Ex 0 3 * * * - Run at 3AM every day)
+  required: true
+  value: 0 3 * * *
+- name: DAYTODEL
+  displayName: Day duration
+  description: Day duration to keep backup file
+  required: false
+  value: '10'
+- name: STORAGE_PVC_WP
+  displayName: WordPress Storage (require for PVC method)
+  description: The Pesistent Volumne Claim where Wordpress "wp-content" files locate
+  required: true
+  value: bonniernews-academy-stage-wp-content
+- name: STORAGE_PVC_BACKUP
+  displayName: Backup Storage (require for PVC method)
+  description: The Pesistent Volumne Claim where backup files locate
+  required: true
+  value: bn-academy-stage-backup-storage
+- name: LOCATION_PVC_BACKUP
+  displayName: Backup folder name (require for PVC method)
+  description: Directory's name of backup file
+  required: true
+  value: wordpress_backup_uploads
