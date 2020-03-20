@@ -19,6 +19,9 @@ fi
 
 echo Copy "uploads" folder to the backup location
 #https://linuxize.com/post/cp-command-in-linux/
+if [ ! -d "/data/backup/$location" ]; then
+  mkdir "/data/backup/$location"
+fi
 cp -rt "/opt/app-root/wp-content/uploads" "/data/backup/$location"
 if [ $? -eq 0 ]; then
   echo " Backup successful"

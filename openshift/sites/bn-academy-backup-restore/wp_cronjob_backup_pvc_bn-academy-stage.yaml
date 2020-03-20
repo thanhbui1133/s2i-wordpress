@@ -51,7 +51,7 @@ objects:
             - name: "${STORAGE_PVC_BACKUP}-data"
               persistentVolumeClaim:
                 claimName: ${STORAGE_PVC_BACKUP}
-            restartPolicy: OnFailure
+            restartPolicy: Never
 parameters:
 - name: NAME
   displayName: Name of schedule job
