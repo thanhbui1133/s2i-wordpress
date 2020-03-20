@@ -22,7 +22,7 @@ echo Copy "uploads" folder to the backup location
 if [ ! -d "/data/backup/$location" ]; then
   mkdir "/data/backup/$location"
 fi
-cp -rt "/opt/app-root/wp-content/uploads" "/data/backup/$location"
+cp -r "/opt/app-root/wp-content/uploads" "/data/backup/$location"
 if [ $? -eq 0 ]; then
   echo " Backup successful"
 else
