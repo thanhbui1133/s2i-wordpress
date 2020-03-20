@@ -5,8 +5,8 @@ metadata:
   name: import-media-folder-from-s3
   annotations:
     openshift.io/display-name: "Import WP Media from S3"
-    description: Application for restore or import from sql file to mysql host
-    tags: file,s3aws
+    description: Application (a scheduled job that runs only once) for restoring or importing WP media files (folder "uploads") from S3
+    tags: file,s3aws,wordpress
 message: |-
   The following service(s) have been created in your project: ${NAME}.
 labels:
@@ -37,7 +37,7 @@ objects:
         - name: wordpress
           image: thanhbui1133/backup_restore_s3_openshift
           imagePullPolicy: Always
-          command: ["/var/lib/mysql/bin/import_upload.sh"]
+          command: ["/var/lib/mysql/bin/import_wp_uploads_from_s3.sh"]
           volumeMounts:
           - mountPath: "${MOUNT_PATH}"
             name: "${NAME}-data"
@@ -57,7 +57,7 @@ objects:
         volumes:
         - name: "${NAME}-data"
           persistentVolumeClaim:
-            claimName: "${PVC_NAME}"
+            claimName: "${STORAGE_PVC_WP}"
         restartPolicy: OnFailure
 parameters:
 - name: NAME
@@ -66,20 +66,17 @@ parameters:
 - name: AWS_ACCESS_KEY_ID
   displayName: Amazon WebService Access Key ID
   required: true
-  value: aws_access_key_id
 - name: AWS_SECRET_ACCESS_KEY
   displayName: Amazon WebService Secret Key
   required: true
-  value: aws_access_key_secret
 - name: AWS_BUCKET
   displayName: Amazon Bucket file path
   required: true
   value: s3://example/EX_dd_mm_yy/uploads
-- name: PVC_NAME
+- name: STORAGE_PVC_WP
   displayName: Persistent Volume Claim Name
-  description: The Persistent Volume Claim name get from Storage.
+  description: The Pesistent Volumne Claim where Wordpress "wp-content" files locate
   required: true
-  value: example-wp-content
 - name: MOUNT_PATH
   displayName: Mount Path
   description: The mount path of container.

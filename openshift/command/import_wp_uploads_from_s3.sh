@@ -18,6 +18,3 @@ BACK_PID=$!
 wait $BACK_PID
 
 tar -xvf uploads.tar uploads
-
-
-
