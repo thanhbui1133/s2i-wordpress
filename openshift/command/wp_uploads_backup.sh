@@ -10,7 +10,7 @@ daytodel="$DAYTODEL"
 #stamp=`date +"%s_%A_%d_%B_%Y_%H%M"`
 stamp=`date +"%m_%d_%Y_%H_%M_%S"`
 
-location="$folder/uploads_$stamp"
+location="$folder/$stamp.tar.gz"
 
 echo "Starting backup..."
 if [ ! -d "/data/backup/$folder" ]; then
@@ -19,10 +19,12 @@ fi
 
 echo Copy "uploads" folder to the backup location
 #https://linuxize.com/post/cp-command-in-linux/
-if [ ! -d "/data/backup/$location" ]; then
-  mkdir "/data/backup/$location"
+if [ ! -d "/data/backup/$folder" ]; then
+  mkdir "/data/backup/$folder"
 fi
-cp -r "/opt/app-root/wp-content/uploads" "/data/backup/$location"
+cd /opt/app-root/wp-content/uploads
+tar -tzf /opt/app-root/wp-content/wp-uploads.tar.gz .
+mv -i "/opt/app-root/wp-content/wp-uploads.tar.gz" "/data/backup/$location"
 if [ $? -eq 0 ]; then
   echo " Backup successful"
 else
@@ -36,7 +38,7 @@ if [ $? -eq 0 ]; then
           if [ -z $daytodel ]; then
             >&2 echo " Can't find day duration"
           else
-            find "/data/backup/$folder" -type d -name 'uploads_*' -mtime +"$daytodel" -exec rm -rf {} \;
+            find "/data/backup/$folder" -type f -name '*.tar.gz' -mtime +"$daytodel" -exec rm {} \;
             if [ $? -eq 0 ]; then
               echo OK Deleted old folders in "/data/backup/$folder" before "$daytodel" days from today
             else
