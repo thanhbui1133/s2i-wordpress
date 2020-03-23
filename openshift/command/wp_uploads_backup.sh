@@ -17,13 +17,9 @@ if [ ! -d "/data/backup/$folder" ]; then
   mkdir "/data/backup/$folder"
 fi
 
-echo Copy "uploads" folder to the backup location
-#https://linuxize.com/post/cp-command-in-linux/
-if [ ! -d "/data/backup/$folder" ]; then
-  mkdir "/data/backup/$folder"
-fi
 cd /opt/app-root/wp-content/uploads
-tar -tzf /opt/app-root/wp-content/wp-uploads.tar.gz .
+echo "Create backup file: /opt/app-root/wp-content/wp-uploads.tar.gz"
+tar -zcvf /opt/app-root/wp-content/wp-uploads.tar.gz .
 mv -i "/opt/app-root/wp-content/wp-uploads.tar.gz" "/data/backup/$location"
 if [ $? -eq 0 ]; then
   echo " Backup successful"

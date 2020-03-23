@@ -1,0 +1,110 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: wp-uploads-restore-from-s3-pvc
+  annotations:
+    openshift.io/display-name: "Wordpress restore/import uploads from S3 or PVC"
+    description: Application (a scheduled job that runs only once) for restoring or importing from uploads backup file to Wordpress application
+    tags: wp-uploads,s3aws,pvc
+    iconClass: icon-wordpress
+message: |-
+  ${NAME} has been created in your project.
+labels:
+  template: wp-uploads-restore-from-s3-pvc
+  app: "wordpress"
+objects:
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: "${NAME}-s3-secret"
+    labels:
+      app: "wordpress-${NAME}"
+  stringData:
+    aws-access-key-id: "${AWS_ACCESS_KEY_ID}"
+    aws-secret-access-key: "${AWS_SECRET_ACCESS_KEY}"
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: "${NAME}"
+  spec:
+    template:
+      metadata:
+        name: "${NAME}"
+      spec:
+        containers:
+        - name: restore
+          image: "${IMAGE}"
+          imagePullPolicy: Always
+          command: ["/bin/sh"]
+          args: ["/var/lib/mysql/bin/wp_uploads_restore.sh"]
+          volumeMounts:
+          - mountPath: /opt/app-root/wp-content
+            name: "${STORAGE_PVC_WP}-data"
+          - mountPath: /data/backup
+            name: "${STORAGE_PVC_BACKUP}-data"
+          env:
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: "${NAME}-s3-secret"
+                key: aws-access-key-id
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: "${NAME}-s3-secret"
+                key: aws-secret-access-key
+          - name: AWS_BUCKET_PATH
+            value: "${AWS_BUCKET}"
+          - name: METHODS
+            value: "${METHODS}"
+          - name: LOCATION
+            value: "${LOCATION_PVC_BACKUP}"
+        volumes:
+        - name: "${STORAGE_PVC_WP}-data"
+          persistentVolumeClaim:
+            claimName: ${STORAGE_PVC_WP}
+        - name: "${STORAGE_PVC_BACKUP}-data"
+          persistentVolumeClaim:
+            claimName: ${STORAGE_PVC_BACKUP}
+        restartPolicy: Never
+parameters:
+- name: NAME
+  displayName: Name of job
+  required: true
+  value: bn-academy-stage-restore-wp-job-runonce
+- name: IMAGE
+  displayName: Name of image
+  required: true
+  value: docker-registry.default.svc:5000/bn-academy-stage/job-container
+- name: METHODS
+  displayName: Backup method
+  description: 'values: "s3", "pvc", "none"'
+  required: true
+  value: pvc
+- name: STORAGE_PVC_WP
+  displayName: WordPress Storage (require for PVC method)
+  description: The Pesistent Volumne Claim where Wordpress "wp-content" files locate
+  required: true
+  value: bonniernews-academy-stage-wp-content
+- name: STORAGE_PVC_BACKUP
+  displayName: Backup Storage (require for PVC method)
+  description: The Persistent Volume Claim where backup files locate
+  required: false
+  value: bn-academy-stage-backup-storage
+- name: LOCATION_PVC_BACKUP
+  displayName: Backup directory/file (require for PVC method)
+  description: Use format {Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.tar.gz for finding the nearest backup file to the specified time, or {Directory's name of backup file} for finding the latest backup file
+  required: false
+  value: wordpress_backup_uploads/03_22_2020_03_00_00.tar.gz
+- name: AWS_ACCESS_KEY_ID
+  displayName: Amazon WebService Key ID (require for AWS S3 method)
+  required: false
+- name: AWS_SECRET_ACCESS_KEY
+  displayName: Amazon WebService Secret Key (require for AWS S3 method)
+  required: false
+- name: AWS_BUCKET
+  displayName: Amazon Bucket file path (require for AWS S3 method)
+  description: Use format {bucket folder url}/{Directory's name of backup file}/{mm_dd_yyyy_hh_mm_ss}.sql for finding the nearest backup file to the specified time, or {bucket folder url}/{Directory's name of backup file} for finding the latest backup file
+  required: false
+  value: s3://example/wordpress_backup_uploads/03_22_2020_03_00_00.tar.gz
