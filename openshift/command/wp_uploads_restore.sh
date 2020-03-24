@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Note: /data/backup is the volume-mounted path to PVC (Persistent Volume Claim) to store backup files
-# Note: /opt/app-root/wp-content is the volume-mounted path to PVC (Persistent Volume Claim) of the WordPress site (wp-content folder)
 
 # Basic variables
 object="$AWS_BUCKET_PATH"
@@ -209,15 +208,16 @@ case "$method" in
 		;;
     esac
 if [ $? -eq 0 ]; then
-
-	echo Dropping the current uploads folder
-	rm -rf /opt/app-root/wp-content/uploads
-
-	echo Creating a new uploads folder
-	mkdir /opt/app-root/wp-content/uploads
+    echo "Extracting $backuppath to temporary /tmp/wp-uploads"
+    mkdir /tmp/wp-uploads
+    tar xvf $backuppath -C /tmp/wp-uploads
 
 	if [ $? -eq 0 ]; then
-		tar xvf $backuppath -C /opt/app-root/wp-content/uploads
+        echo Dropping the current uploads folder
+	    rm -rf /opt/app-root/wp-content/uploads
+
+        echo "Moving uploads from /tmp/uploads"
+        mv "/tmp/wp-uploads" "/opt/app-root/wp-content/uploads"
 
 		BACK_PID=$!
 		wait $BACK_PID
