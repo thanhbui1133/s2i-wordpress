@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Note: /data/backup is the volume-mounted path to PVC (Persistent Volume Claim) to store backup files
+# Note: /opt/app-root/wp-content is the volume-mounted path to PVC (Persistent Volume Claim) of the WordPress site (wp-content folder)
 
 # Basic variables
 object="$AWS_BUCKET_PATH"
