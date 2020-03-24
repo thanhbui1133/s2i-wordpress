@@ -4,7 +4,7 @@ apiVersion: v1
 metadata:
   name: wp-uploads-restore-from-s3-pvc
   annotations:
-    openshift.io/display-name: "Wordpress restore/import uploads from S3 or PVC"
+    openshift.io/display-name: "WP Uploads restore/import from S3 or PVC"
     description: Application (a scheduled job that runs only once) for restoring or importing from uploads backup file to Wordpress application
     tags: wp-uploads,s3aws,pvc
     iconClass: icon-wordpress
@@ -72,7 +72,7 @@ parameters:
 - name: NAME
   displayName: Name of job
   required: true
-  value: bn-academy-stage-restore-wp-job-runonce
+  value: bn-academy-stage-restore-wp-uploads-job-runonce
 - name: IMAGE
   displayName: Name of image
   required: true

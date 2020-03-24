@@ -4,7 +4,7 @@ apiVersion: v1
 metadata:
   name: wp-schedule-backup-uploads-to-pvc
   annotations:
-    openshift.io/display-name: "Schedule backup WP Uploads to PVC"
+    openshift.io/display-name: "WP Uploads schedule backup to PVC"
     description: Schedule backup files from WordPress Uploads folder to PVC
     tags: pvc
     iconClass: icon-wordpress
