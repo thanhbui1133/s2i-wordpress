@@ -55,6 +55,7 @@ find_latest_bk() {
     fi
 }
 
+# Note: S3 method was not tested but is believed to work well, as it is similar to what tested for mysql_s3_restore.sh (S3 method); PVC method was tested and worked well
 case "$method" in
     "s3") echo "Starting AWS S3 restore..."
         echo "Setup environment"
