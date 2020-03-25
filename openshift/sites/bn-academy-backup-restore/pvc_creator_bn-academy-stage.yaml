@@ -36,4 +36,4 @@ parameters:
     displayName: Wordpress Volume Capacity
     name: WORDPRESS_VOLUME_CAPACITY
     required: true
-    value: 3Gi
+    value: 2Gi
