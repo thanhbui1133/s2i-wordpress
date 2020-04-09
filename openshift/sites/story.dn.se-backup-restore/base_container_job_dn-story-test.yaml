@@ -23,5 +23,5 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: 'openshift/command/Dockerfile'
+      dockerfilePath: 'openshift/command/Dockerfile.awscli'
   triggers: []

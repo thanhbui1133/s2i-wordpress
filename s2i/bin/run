@@ -15,7 +15,7 @@ if [ "$(ls -A ${WP_BASE_DIR}/wp-content)" ]; then
   echo "-> Installing provided user content..."
   for i in $(ls -A1 ${WP_BASE_DIR}/.wp-content-git/); do
     echo "--> Rsyncing $i"
-    rsync --stats -rlhOdH --itemize-changes --no-times --no-owner --size-only ${WP_BASE_DIR}/.wp-content-git/$i/* /opt/app-root/wp-content/$i/ &
+    rsync --stats -rlhOdH --itemize-changes --no-times --no-owner ${WP_BASE_DIR}/.wp-content-git/$i/* /opt/app-root/wp-content/$i/ &
   done
 fi
 
@@ -68,11 +68,20 @@ if ( WP_DEBUG ) {
     define( 'WP_DEBUG_LOG', true );
     define( 'WP_DEBUG_DISPLAY', false );
 }
+else
+{
+    ini_set('display_errors','Off');
+    error_reporting(E_ERROR);
+}
 define( 'WP_MEMORY_LIMIT', '${WP_MEMORY_LIMIT}' );
 define( 'WP_CACHE', ${WP_CACHE} );
 // Back-end
 define( 'WP_MAX_MEMORY_LIMIT', '${WP_MAX_MEMORY_LIMIT}' );
 //
+/** We created symlink /opt/app-root/wp-content to /opt/app-root/src/wp-content so WP_CONTENT_DIR needs to be /opt/app-root/wp-content instead of /opt/app-root/src/wp-content */
+if ( !defined('WP_CONTENT_DIR') )
+define('WP_CONTENT_DIR', '/opt/app-root/wp-content');
+
 EOF
 
   # multisite support

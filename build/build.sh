@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e -o pipefail
-docker pull centos/php-70-centos7:latest
+docker pull centos/php-72-centos7:latest
 ## php 5.6
 #for version in ${VERSIONS}; do
 #    _version=$(echo ${version} | cut -d ":" -f1)
@@ -14,14 +14,14 @@ docker pull centos/php-70-centos7:latest
 #    --label io.bonniernews.wordpress.build.user="${USER}" .
 #done
 
-## php 7.0
+## php 7.x
 for version in ${VERSIONS}; do
     _version=$(echo ${version} | cut -d ":" -f1)
     _short_version=$(echo ${_version//./} | cut -c 1,2 )
     _sha1=$(echo ${version} | cut -d ":" -f2)
-    echo "=== Building Wordpress s2i php 7.0 v${_version}"
-    docker build --rm -f Dockerfile.7.0 --build-arg WORDPRESS_VERSION=${_version} --build-arg WORDPRESS_SHA1=${_sha1} \
-    -t ${NAMESPACE}/${BASE_IMAGE_NAME}-php70-${_short_version}:${_version} \
+    echo "=== Building Wordpress s2i php 7.x v${_version}"
+    docker build --rm -f Dockerfile.7.2 --build-arg WORDPRESS_VERSION=${_version} --build-arg WORDPRESS_SHA1=${_sha1} \
+    -t ${NAMESPACE}/${BASE_IMAGE_NAME}-php72-${_short_version}:${_version} \
     --label io.bonniernews.wordpress.version="${_version}" \
     --label io.bonniernews.wordpress.build.date="$(date +%c)" \
     --label io.bonniernews.wordpress.build.user="${USER}" .
